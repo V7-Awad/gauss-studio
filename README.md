@@ -1,12 +1,38 @@
-# Gaussian Elimination Visualizer
+<div align="center">
+  <img src="assets/gauss_icon.png" alt="Gauss Studio icon" width="112" />
+  <h1>Gauss Studio</h1>
+  <p><strong>An exact, step-by-step visualizer for Gaussian elimination</strong></p>
+  <p>Explore pivots, row operations, and solutions to systems of linear equations.</p>
+</div>
 
-A Windows desktop app for exact, step-by-step Gaussian and Gauss–Jordan elimination.
-The math engine uses `fractions.Fraction`; UI and document/OCR services are kept out of `core/`.
-The Windows build uses the custom matrix icon in `assets/gauss_icon.ico`.
+---
 
-## Run
+## Overview
 
-Requires Python 3.11 or newer. From this directory:
+Gauss Studio is a dark-themed Windows desktop application for solving systems of linear equations with Gaussian and Gauss–Jordan elimination. It uses exact rational arithmetic, so intermediate row operations and final answers are represented as fractions rather than rounded decimal approximations.
+
+## Features
+
+- Solve systems with up to 20 equations and 20 variables.
+- Enter equations directly or edit an augmented matrix.
+- Choose the first nonzero pivot or the largest absolute pivot.
+- Follow each row operation and inspect the matrix at every step.
+- Navigate steps manually or play them automatically.
+- Identify unique, infinite, and inconsistent systems, including rank and free-variable information.
+- Import equations from text-based PDFs and use OCR for scanned PDFs and images.
+- Review and edit extracted equations before using them.
+- Export solution steps to PDF.
+
+## Try the import samples
+
+These files are included to exercise the import workflow:
+
+- [Text-based sample PDF](sample_equations.pdf)
+- [Image sample for OCR](sample_equations_ocr.png)
+
+## Run from source
+
+Requires Python 3.11 or newer. On Windows, run these commands from the repository directory:
 
 ```powershell
 python -m venv .venv
@@ -15,43 +41,52 @@ python -m pip install -e ".[dev]"
 python -m gauss_visualizer
 ```
 
-The initial system is a worked example; press **Solve** to inspect its steps. You can change
-the equation and variable counts, enter equations individually, or switch to the matrix grid.
-Use the left/right arrow keys or the navigation buttons to move between operations. The File
-menu exports all solution snapshots to PDF.
+The app opens with a sample system. Select **Solve** to view its solution, edit the equations or matrix to try another system, and use the navigation controls or arrow keys to review the row operations. The **File** menu exports the current solution walkthrough as a PDF.
 
-## Image and PDF import
+## Importing images and PDFs
 
-PDF text extraction uses PyMuPDF. Scanned PDFs and image files use Tesseract OCR through
-`pytesseract`; install Tesseract OCR separately. The app checks `PATH` and common Windows install
-folders automatically. Imported lines appear in an editable review dialog before they are loaded
-into the equation editor. If Tesseract is installed in a custom folder, set `GAUSS_TESSERACT_PATH`
-to the full `tesseract.exe` path before launching the application.
-OCR is bounded to 20 seconds per page/image so a difficult scan cannot leave the import worker
-waiting indefinitely. Application error logs are written to the operating system's per-user
-application data folder.
+Text-based PDFs are read with PyMuPDF. Scanned PDFs and image files (`PNG`, `JPG`, `BMP`, `TIF`) are read with Tesseract OCR through `pytesseract`.
 
-## Tests
+Tesseract OCR is optional and must be installed separately. The application looks for `tesseract.exe` on `PATH` and in common Windows installation folders. For a custom location, set `GAUSS_TESSERACT_PATH` to the full path of `tesseract.exe` before launching the app. For example:
+
+```powershell
+$env:GAUSS_TESSERACT_PATH = "C:\Program Files\Tesseract-OCR\tesseract.exe"
+python -m gauss_visualizer
+```
+
+Each OCR operation has a 20-second timeout. Extracted equations are shown in an editable review window before they are added to the system.
+
+## Build the Windows executable
+
+After installing the development dependencies, run:
+
+```powershell
+./build_windows.ps1
+```
+
+The single-file executable is created at `dist/GaussianEliminationVisualizer.exe`. Tesseract is not bundled and must be installed separately to use OCR. Build output is excluded from Git; publish executable files as GitHub Release assets if needed.
+
+## Run the tests
 
 ```powershell
 python -m pytest
 ```
 
-The `core` package has no PySide6, OCR, or file-service imports and can be used independently.
+The test suite covers the exact solver, equation parser, solution analyzer, repeated imports, OCR timeouts, and UI recovery after clearing and solving again. GitHub Actions runs the suite on Windows for pushes and pull requests.
 
-## Licensing notes
+## Project structure
 
-PySide6 is available under LGPL/commercial licensing. PyMuPDF is AGPL/commercial; review those
-terms before distributing a packaged application.
+```text
+src/gauss_visualizer/
+  core/       Equation parsing, exact arithmetic, elimination, and analysis
+  services/   Image/PDF import and solution PDF export
+  ui/         PySide6 desktop interface and background import worker
+assets/       Application icon
+tests/        Automated tests
+```
 
-## Build a Windows executable
+## Dependencies and licensing
 
-After installing requirements, run `./build_windows.ps1`. The single-file executable is written to
-`dist/GaussianEliminationVisualizer.exe`.
-Tesseract is an external install and is not bundled by this script.
+The interface uses PySide6, PDF import uses PyMuPDF, image processing uses Pillow, and PDF export uses ReportLab. Tesseract OCR is an optional external dependency.
 
-## GitHub
-
-The repository does not include a license. Choose a license before publishing if you want others
-to have explicit reuse rights. Also review the PyMuPDF AGPL/commercial terms above before
-distributing binaries.
+This repository does not currently include a project license. Choose and add a license before inviting others to reuse or redistribute the project. PyMuPDF is available under AGPL or commercial terms; review its licensing requirements before distributing the application or binaries. PySide6 also has LGPL and commercial licensing options.
