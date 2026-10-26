@@ -1,0 +1,16 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.hypothesis/
+.venv/
+build/
+dist/
+*.spec
+*.log
+.env
+.env.*
+!.env.example
+ui_preview.png
+ui_color_check.png
+.DS_Store
+Thumbs.db
